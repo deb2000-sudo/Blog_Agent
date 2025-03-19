@@ -1,23 +1,43 @@
 import streamlit as st
 import os
-from crew import crew  # Importing the CrewAI pipeline
+from crew import create_crew  # Import the modified create_crew function
+from tools import YT_Tool
+from crewai_tools import YoutubeChannelSearchTool
+from agents import blog_researcher, blog_writer  # importing agents 
 
+
+def update_yt_tool(channel_handle):
+    """Dynamically update the YouTube channel handle"""
+    global YT_Tool
+    # Create a new instance and update the global variable
+    YT_Tool = YoutubeChannelSearchTool(youtube_channel_handle=channel_handle)
+    
+    # Update the tools for both agents
+    blog_researcher.tools = [YT_Tool]
+    blog_writer.tools = [YT_Tool]
+    
 def main():
     st.title("AI-Powered Blog Generator")
     
-    # Input field for topic
+    # Input fields for YouTube channel handle and topic
+    channel_handle = st.text_input("Enter the YouTube channel handle (e.g., @flutterguys):")
     topic = st.text_input("Enter a topic for your blog:")
-    
+
     if st.button("Generate Blog"):  
-        if topic.strip():
+        if channel_handle.strip() and topic.strip():
             with st.spinner("Generating content..."):
-                result = crew.kickoff(inputs={'topic': topic})  # Running CrewAI
-                
+                # Update the YT_Tool dynamically with the new channel handle
+                update_yt_tool(channel_handle)
+
+                # Create and run crew with the given topic
+                crew = create_crew(topic)
+                result = crew.kickoff()
+
                 # Extract actual content from CrewOutput
-                blog_content = str(result)  # Convert CrewOutput to string
-                
-                # Save result to session state (local storage alternative in Streamlit)
-                st.session_state['blog_content'] = blog_content  
+                blog_content = str(result)
+
+                # Save result to session state
+                st.session_state['blog_content'] = blog_content
                 
                 # Write content to a file
                 with open("new-blog-post.md", "w", encoding="utf-8") as f:
@@ -25,7 +45,7 @@ def main():
                 
                 st.success("Blog generated successfully!")
         else:
-            st.warning("Please enter a topic before generating.")
+            st.warning("Please enter both the YouTube channel handle and topic before generating.")
     
     # Display stored content if available
     if 'blog_content' in st.session_state:

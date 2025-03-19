@@ -1,11 +1,15 @@
 from crewai import Agent
-from tools import YT_Tool
+
 ## Create a senior blog content researcher
 from dotenv import load_dotenv
 load_dotenv()
 import os
 os.environ["OPENAI_MODEL_NAME"]=os.getenv("OPENAI_MODEL_NAME")
 os.environ["OPENAI_API_KEY"]=os.getenv("OPENAI_API_KEY")
+
+
+from tools import YT_Tool
+
 blog_researcher=Agent(
     role='Blog Researcher from youtube videos',
     goal="get the relevant video content for the topic{topic} from YT cahnel",

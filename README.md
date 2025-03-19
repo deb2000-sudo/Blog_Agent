@@ -2,7 +2,7 @@
 
 conda create -p venv python==3.10
 
-conda acctivate <folder path>
+conda activate <folder path>/<environment folder>
 
 # installing and Running
 pip install -r requirements.txt
